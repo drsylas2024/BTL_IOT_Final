@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard IOT</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">IOT_Dashboard</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Control">Control</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Setting">Setting</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            <div class="row mb-3" style="max-height: 200px;">
+                <canvas id="chartTemperature" width="400" height="200"></canvas>
+            </div>
+            <div class="row mb-3" style="max-height: 200px;">
+                <canvas id="chartSound" width="400" height="200"></canvas>
+            </div>
+            <div class="row mb-3" style="max-height: 200px;">
+                <canvas id="chartHumidity" width="400" height="200"></canvas>
+            </div>
+            <div class="row mb-3" style="max-height: 200px;">
+                <canvas id="chartGas" width="400" height="200"></canvas>
+            </div>
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2023 - Dr.Sylas
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.min.js" integrity="sha512-WW8/jxkELe2CAiE4LvQfwm1rajOS8PHasCCx+knHG0gBHt8EXxS6T6tJRTGuDQVnluuAvMxWF4j8SNFDKceLFg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js" integrity="sha512-X/YkDZyjTf4wyc2Vy16YGCPHwAY8rZJY+POgokZjQB2mhIRFJCckEGc6YyX9eNsPfn0PzThEuNs+uaomE5CO6A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Sử dụng CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='socketApp.js') }}"></script>
+  <script src="{{ url_for('static', filename='chartJS.js') }}"></script>
+  <!-- Thư viện Toastify-JS -->
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script type="module">
+    import makeChart from "{{url_for('static', filename='chartJS.js')}}";
+    import client from "{{url_for('static', filename='socketApp.js')}}";
+    let chartObjects = [
+        {
+            id : "chartTemperature",
+            label : "Temperature",
+            color : 'rgb(255, 99, 132)',
+        },
+        {
+            id : "chartSound",
+            label : "Sound",
+            color : 'rgb(54, 162, 235)',
+        },
+        {
+            id : "chartHumidity",
+            label : "Humidity",
+            color : 'rgb(255, 205, 86)',
+        },
+        {
+            id : "chartGas",
+            label : "Gas",
+            color : 'rgb(75, 192, 192)',
+        }
+    ]
+    chartObjects.forEach(options => {
+      console.log(options)
+      let ctx = document.getElementById(options.id).getContext('2d');
+      let chart = makeChart(ctx,{
+        label : options.label,
+        color : options.color,
+        borderWidth : 1.8});
+      client.charts.push(chart);
+    })
+    client.run()
+  </script>
+</body>
+</html>
