@@ -6,34 +6,35 @@
 
 WebServer server(80);
 
-
+//Thời gian delay gửi lên cloud = 1s
 const float timeSend = 1;
+//Thời gian mốc đo delay send dữ liệu
 long last_send = 0;
-long last_tone = 0;
-String gateway ;
+// 19 - 3
+// 21 - 2
 //                      RX  TX
 SoftwareSerial mySerial(19, 21); // Tạo cổng UART phần mềm trên chân (RX) và (TX)
 
-void turn(int PIN, int value){
-  digitalWrite(PIN,value);
-}
-
+//Hàm đo thời gian
 bool isWait(long current, float seconds){
   return (int)(millis() - current) >= seconds * 1000;
 }
 
+//Hàm cảnh báo
+//Khi nhận yêu cầu cảnh báo thì gửi sang cho arduino
 void warn(){
   last_tone = millis();
+  //Gửi cảnh báo
   mySerial.println("WARN");
   mySerial.flush();
   server.send(200, "text/plain", "OK");
 }
 
+//Hàm setup
 void setup() {
   delay(2000);
   Serial.begin(9600);  
   mySerial.begin(9600);  
-  Serial.print("Waiting for connect UART ");
   const char* ssid = "uaali";
   const char* pwd = "12345678";
   WiFi.begin(ssid, pwd);
@@ -44,13 +45,13 @@ void setup() {
     delay(500);
   }
   Serial.println("\nWifi Connected !");
-  gateway = WiFi.gatewayIP().toString();
-  Serial.println(gateway+"_");
 
   server.on("/warn", warn);
   server.begin();
 }
 
+//Hàm xử lý dữ liệu
+//"a|b|c|d|e" => a,b,c,d,e
 double* split_to_array(String t){
   double* arr = new double[5];
   int idxarr = 0;
@@ -66,6 +67,7 @@ double* split_to_array(String t){
   return arr;
 }
 
+//Hàm gửi dữ liệu lên cloud
 bool send2Cloud(String data2Send){
   if(WiFi.status() != WL_CONNECTED) return false;
   // Sound|Humidity|Temperature|Light|Gas
@@ -76,20 +78,34 @@ bool send2Cloud(String data2Send){
   httpDweet.begin(url);
   int codeDweet = httpDweet.GET();
   httpDweet.end();
+  //code = 200 thành công
+  //code 404 = ko tìm thấy
+  //code -1 lỗi wifi
+  //code 403 bị chặn
+
+  //So sánh
   return codeDweet == 200;
 }
 
+//Ham loop
 void loop() { 
+  //Kiểm tra có dữ lieu gui den tu arduino ko
   if (mySerial.available()) {
+    //Doc chuoi tu arduino
     String rcv = mySerial.readStringUntil('\n');
+    //Loai bo ki tu dac biet dau chuoi
+    //abcde      -> abcde
     rcv.trim();
+    //In ra man hinh chuoi da nhan
     Serial.print("Received from Arduino Uno: ");
     Serial.println(rcv);
+    //Kiem tra thoi gian delay
     if(isWait(last_send, timeSend)){
       last_send = millis();
       String stt = send2Cloud(rcv) ? "SUCCESS" : "FAILED";
       Serial.println("Send2Cloud : " + stt);
     }
   }
+  //Handle server
   server.handleClient();
 }
