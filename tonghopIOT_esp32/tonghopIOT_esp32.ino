@@ -21,33 +21,19 @@ void turn(int PIN, int value){
 bool isWait(long current, float seconds){
   return (int)(millis() - current) >= seconds * 1000;
 }
-float sinVal;
-int toneVal;
+
 void warn(){
   last_tone = millis();
-  for(int x=0; x<180; x++){
-      // convert degrees to radians then obtain value
-      sinVal = (sin(x*(3.1412/180)));
-      // generate a frequency from the sin value
-      toneVal = 2000+(int(sinVal*1000));
-      tone(5, toneVal);
-      delay(2); 
-  }  
+  mySerial.println("WARN");
+  mySerial.flush();
   server.send(200, "text/plain", "OK");
 }
 
 void setup() {
   delay(2000);
-  pinMode(5,OUTPUT);
   Serial.begin(9600);  
-  while(!Serial){}
   mySerial.begin(9600);  
   Serial.print("Waiting for connect UART ");
-  while(!mySerial){
-    Serial.print(".");
-    delay(500);
-  }
-  Serial.println("\nConnected !");
   const char* ssid = "uaali";
   const char* pwd = "12345678";
   WiFi.begin(ssid, pwd);
@@ -104,9 +90,6 @@ void loop() {
       String stt = send2Cloud(rcv) ? "SUCCESS" : "FAILED";
       Serial.println("Send2Cloud : " + stt);
     }
-  }
-  if(isWait(last_tone, 3)){
-    noTone(5);
   }
   server.handleClient();
 }

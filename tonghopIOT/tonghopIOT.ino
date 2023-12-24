@@ -22,7 +22,24 @@ bool isWait(long current, float seconds){
   return millis() - current >= seconds * 1000;
 }
 
+float sinVal;
+int toneVal;
+long last_tone;
+
+void warn(){
+  last_tone = millis();
+  for(int x=0; x<180; x++){
+      // convert degrees to radians then obtain value
+      sinVal = (sin(x*(3.1412/180)));
+      // generate a frequency from the sin value
+      toneVal = 2000+(int(sinVal*1000));
+      tone(8, toneVal);
+      delay(2); 
+  }  
+}
+
 void setup() {
+  pinMode(8, OUTPUT);
   pinMode(SOUND_SENSOR, INPUT);    // Set sound sensor pin as an INPUT
   pinMode(LIGHT_SENSOR, INPUT_PULLUP);
   dht.begin();   //Start DHT sensor
@@ -80,5 +97,13 @@ void loop() {
     Serial.println("Sent !");
 
     last_send = millis();
+  }
+  if(mySerial.available()){
+    String rcv = mySerial.readStringUntil('\n');
+    rcv.trim();
+    if(rcv=="WARN") warn();
+  }
+  if(isWait(last_tone, 3)){
+    noTone(8);  
   }
 }

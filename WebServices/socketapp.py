@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 from flask_cors import CORS
 import dweepy
 import time
@@ -12,7 +12,7 @@ socketio = SocketIO(app, cors_allowed_origins=['http://localhost:5000','http://1
 app.config['CORS_HEADERS'] = 'Content-Type'
 last_time = ""
 model = loadModel()
-ipsub = "192.168.137.38"
+ipsub = "192.168.137.9"
 
 def getDataFromDweet(dweetObj : dict) -> dict:
     sound = dweetObj['content']["sound"]
@@ -44,9 +44,9 @@ def send2Client():
             print(f"Predict : {current_time}",pre)
             if pre != "Bình thường !":
                 print("Predict : ",pre)
-                # requests.post("https://pushmore.io/webhook/iqPPXvy5mEiZ8eLW4kGKZhyA", json = (pre + " - " + current_time))
+                requests.post("https://pushmore.io/webhook/iqPPXvy5mEiZ8eLW4kGKZhyA", json = (pre + " - " + current_time))
                 socketio.emit('status_update', {"time" : current_time, "value" : pre})
-                # requests.get(f"http://{ipsub}/warn")
+                requests.get(f"http://{ipsub}/warn")
         # Đợi một khoảng thời gian trước khi lấy dữ liệu mới (ví dụ: 0.5 giây)
         time.sleep(0.5)
 
